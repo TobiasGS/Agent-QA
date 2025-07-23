@@ -1,0 +1,9 @@
+python-dotenv
+agno
+duckduckgo-search
+langchain
+pypdf
+unstructured
+python-docx
+faiss-cpu   # opcional se for indexar base de conhecimento em vetores
+python-docx  # para escrever DOCX de saída
