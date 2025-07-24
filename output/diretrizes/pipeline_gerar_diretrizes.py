@@ -1,19 +1,18 @@
-from app.agentes.agente_base_conhecimento import AgenteBaseConhecimento
-from app.utils.arquivo import salvar_arquivo
-from app.utils.texto import juntar_arquivos_em_pasta
-from datetime import datetime
+from agents.bdd_knowledge_agent import gerar_diretrizes_bdd
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from utils.arquivo import salvar_arquivo
+from utils.texto import juntar_arquivos_em_pasta
+from datetime import datetime
 
-# 1. Carregar a base de conhecimento (como já faz atualmente)
+# 1. Carrega base de conhecimento
 conteudo_base = juntar_arquivos_em_pasta("base_de_conhecimento")
 
-# 2. Inicializa o agente
-agente = AgenteBaseConhecimento()
+# 2. Gera diretrizes
+resposta = gerar_diretrizes_bdd(conteudo_base)
 
-# 3. Gera diretrizes
-resposta = agente.executar(conteudo_base)
-
-# 4. Salvar diretrizes
+# 3. Salva arquivo
 timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 nome_base = f"diretrizes_{timestamp}.md"
 caminho_saida = os.path.join("output", "diretrizes", nome_base)

@@ -1,0 +1,8 @@
+python-dotenv
+agno
+duckduckgo-search
+langchain
+pypdf
+unstructured
+python-docx
+faiss-cpu

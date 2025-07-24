@@ -1,7 +1,9 @@
-from app.agentes.agente_gerador_cenarios import AgenteGeradorCenarios
-from app.utils.arquivo import ler_arquivo
-from app.utils.arquivo import salvar_arquivo
+from agents.bdd_knowledge_agent import AgenteBaseConhecimento
+from utils.arquivo import salvar_arquivo, ler_arquivo
+from utils.arquivo import salvar_arquivo
 import os
+from agents.gerador_bdd import AgenteGeradorCenarios
+
 
 # 1. Ler história de usuário
 caminho_historia = "historias/Historia de Usuário.docx"

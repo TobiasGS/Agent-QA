@@ -59,9 +59,15 @@ def carregar_textos_base_conhecimento(diretorio: str, chunk_size=1000, chunk_ove
                 docs = carregar_arquivo_generico(arquivo, chunk_size, chunk_overlap)
                 texto_arquivo = "\n".join([doc.page_content for doc in docs])
                 textos.append(texto_arquivo)
+
+                # Novo: log explícito com nome do arquivo
+                print(f"[ARQUIVO CARREGADO] {os.path.basename(arquivo)} ({len(docs)} partes)", flush=True)
+
             except Exception as e:
-                print(f"[AVISO] Falha ao carregar {arquivo}: {e}")
+                print(f"[AVISO] Falha ao carregar {arquivo}: {e}", flush=True)
     return "\n\n".join(textos)
+
+
 
 
 def salvar_diretrizes(diretriz: str, caminho: str) -> None:
@@ -80,14 +86,12 @@ def salvar_cenarios(cenarios: List[dict], caminho: str) -> None:
             f.write(c.get("texto", "") + "\n\n")
 
 
-def carregar_ultima_diretriz(diretorio: str) -> str:
-    """Carrega a diretriz mais recente salva no diretório informado."""
-    arquivos = glob.glob(os.path.join(diretorio, '*.txt'))
-    if not arquivos:
-        raise FileNotFoundError("Nenhuma diretriz encontrada no diretório.")
-
-    arquivos.sort(key=os.path.getmtime, reverse=True)
-    ultimo_arquivo = arquivos[0]
-
-    with open(ultimo_arquivo, 'r', encoding='utf-8') as f:
+def carregar_ultima_diretriz(diretorio: str = "output") -> str:
+    """
+    Carrega a última diretriz gerada, assumindo que está salva em output/ultima_diretriz.txt.
+    """
+    caminho = os.path.join(diretorio, "ultima_diretriz.txt")
+    if not os.path.exists(caminho):
+        raise FileNotFoundError(f"Nenhuma diretriz encontrada em {caminho}.")
+    with open(caminho, 'r', encoding='utf-8') as f:
         return f.read()

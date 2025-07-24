@@ -2,6 +2,7 @@ from agno.agent import Agent
 from agno.models.groq import Groq
 from dotenv import load_dotenv
 import os
+import re
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ gerador_bdd = Agent(
 
 def gerar_cenarios_bdd(historia_texto: str, diretriz_texto: str):
     prompt = f"""
-Você é um especialista em QA. Com base nas seguintes diretrizes e na história do usuário, gere cenários de teste no formato BDD (Given / When / Then):
+Você é um especialista em QA. Com base nas diretrizes e na história do usuário abaixo, gere cenários de teste no formato BDD, usando a sintaxe Gherkin (pode usar Markdown para formatação):
 
 Diretrizes:
 {diretriz_texto}
@@ -31,6 +32,20 @@ História do usuário:
 Por favor, escreva os cenários BDD completos agrupados por funcionalidade e com exemplos de tabelas quando necessário.
 """
     resposta = gerador_bdd.run(prompt)
-    # Supondo que a resposta seja texto com cenários separados por duas quebras de linha
-    cenarios = resposta.split("\n\n")
+    if hasattr(resposta, "content"):
+        texto = resposta.content
+    elif hasattr(resposta, "text"):
+        texto = resposta.text
+    else:
+        texto = str(resposta)
+
+    # (Opcional) Limpar markdown para Gherkin puro
+    # texto = limpar_markdown(texto)
+
+    # Salva no local e formato desejado
+    with open("output/cenarios_com_diretriz.md", "w", encoding="utf-8") as f:
+        f.write(texto)
+
+    cenarios = texto.split("\n\n")
     return [{"texto": c.strip()} for c in cenarios if c.strip()]
+

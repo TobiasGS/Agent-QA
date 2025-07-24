@@ -2,9 +2,11 @@ import os
 import sys
 import time
 import glob
+import requests
+from requests.exceptions import HTTPError
 import numpy as np
-from dotenv import load_dotenv
-load_dotenv()
+
+
 
 from agents.gerador_bdd import gerador_bdd, gerar_cenarios_bdd
 from agents.complementador import complementador
@@ -29,15 +31,13 @@ from utils.faiss_utils import (
     salvar_metadados
 )
 
-from utils.groq_embeddings import GroqEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 
-
-
-# 🔑 Instancia os embeddings com a API Key do .env
-embeddings = GroqEmbeddings(
-    api_key=os.getenv("GROQ_API_KEY"),
-    model="mixtral-8x7b-32768"
+embeddings = OpenAIEmbeddings(
+    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    model="text-embedding-3-small"
 )
+
 
 INPUT_DIR = os.getenv("INPUT_DIR", "input/historias")
 KB_DIR = os.getenv("KB_DIR", "knowledge_base")
@@ -141,12 +141,12 @@ def menu_pipeline_historia():
 
 
 def gerar_diretrizes_base_conhecimento():
-    print("[LOG] Carregando base de conhecimento...")
+    print("[LOG] Carregando base de conhecimento...", flush=True)
     conhecimento = carregar_textos_base_conhecimento(KB_DIR)
-    print("[LOG] Gerando diretrizes...")
+    print("[LOG] Gerando diretrizes...", flush=True)
     diretriz = gerar_diretrizes_bdd(conhecimento)
     salvar_diretrizes(diretriz, 'output/ultima_diretriz.txt')
-    print("[SUCESSO] Diretrizes salvas em: output/ultima_diretriz.txt")
+    print("[SUCESSO] Diretrizes salvas em: output/ultima_diretriz.txt", flush=True)
 
 
 def gerar_cenarios_com_diretriz():
@@ -164,13 +164,13 @@ def gerar_cenarios_com_diretriz():
         return
 
     historia = carregar_historia(caminho)
-    diretriz = carregar_ultima_diretriz('diretrizes')
+    diretriz = carregar_ultima_diretriz('output')
 
     print("[LOG] Gerando cenários com diretriz...")
     cenarios = gerar_cenarios_bdd(historia, diretriz)
     if cenarios:
-        salvar_cenarios(cenarios, "output/cenarios_com_diretriz.feature")
-        print("[SUCESSO] Cenários salvos em: output/cenarios_com_diretriz.feature")
+        salvar_cenarios(cenarios, "output/cenarios_com_diretriz.md")
+        print("[SUCESSO] Cenários salvos em: output/cenarios_com_diretriz.md")
     else:
         print("[AVISO] Nenhum cenário gerado.")
 
@@ -199,7 +199,11 @@ def indexar_base_conhecimento_faiss():
         return
 
     print("[LOG] Gerando embeddings com Groq...")
-    vetores = embeddings.embed_documents(textos)
+    try:
+        vetores = embeddings.embed_documents(textos)
+    except requests.exceptions.HTTPError as e:
+        print("Erro na requisição:", e.response.text)
+        raise
 
     vetor_dim = len(vetores[0])
     indice = criar_indice_faiss(vetor_dim)

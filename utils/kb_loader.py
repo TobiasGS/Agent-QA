@@ -11,11 +11,12 @@ def carregar_base_conhecimento(diretorio_kb: str, chunk_size=1000, chunk_overlap
         if not os.path.isfile(caminho):
             continue
         try:
+            print(f"[LOG] Carregando arquivo: {nome}", flush=True)  # <-- Exibe nome do arquivo carregado
             docs = carregar_arquivo_generico(caminho, chunk_size, chunk_overlap)
             todos_docs.extend(docs)
         except ValueError:
             # ignora formatos desconhecidos
-            pass
+            print(f"[AVISO] Formato desconhecido ou erro ao carregar: {nome}")  # <-- Log de erro
     return todos_docs
 
 
